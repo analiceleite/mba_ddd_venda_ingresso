@@ -1,5 +1,4 @@
 import { AggregateRoot } from '../../../common/domain/aggregate-root';
-import { Entity } from '../../../common/domain/entity';
 import { Cpf } from '../../../common/domain/value-objects/cpf.vo';
 import { Name } from '../../../common/domain/value-objects/name.vo';
 import { Uuid } from '../../../common/domain/value-objects/uuid.vo';
@@ -32,10 +31,6 @@ export class Customer extends AggregateRoot {
       name: new Name(command.name),
       cpf: new Cpf(command.cpf),
     });
-  }
-
-  equals(_entity: Entity): boolean {
-    throw new Error('Method not implemented.');
   }
 
   toJSON() {

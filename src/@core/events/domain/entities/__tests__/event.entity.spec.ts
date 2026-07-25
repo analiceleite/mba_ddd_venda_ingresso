@@ -1,19 +1,16 @@
-import { test, expect } from "@jest/globals"
-import { Event } from "../event.entity";
-import { PartnerId } from "../partnet.entity";
+import { test, expect } from '@jest/globals';
+import { Event } from '../event.entity';
+import { PartnerId } from '../partner-id';
 
 test('deve criar um evento', () => {
-    const event = Event.create({
-        name: 'Show do Foo Fighters',
-        description: 'Show da banda Foo Fighters em São Paulo',
-        is_published: true,
-        total_spots: 100,
-        total_spots_reserved: 0,
-        date: new Date(),
-        partner_id: new PartnerId(),
-    })
+  const event = Event.create({
+    name: 'Show do Foo Fighters',
+    description: 'Show da banda Foo Fighters em São Paulo',
+    date: new Date(),
+    partner_id: new PartnerId(),
+  });
 
-    expect(event).toBeInstanceOf(Event);
+  expect(event).toBeInstanceOf(Event);
 
-    console.log(event.toJSON())
+  console.log(event.toJSON());
 });
