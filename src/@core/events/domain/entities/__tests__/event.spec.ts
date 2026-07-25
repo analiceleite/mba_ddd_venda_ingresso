@@ -1,5 +1,5 @@
 import { test, expect } from '@jest/globals';
-import { Event } from '../event.entity';
+import { Event } from '../event';
 import { PartnerId } from '../partner-id';
 
 test('deve criar um evento', () => {
@@ -11,6 +11,4 @@ test('deve criar um evento', () => {
   });
 
   expect(event).toBeInstanceOf(Event);
-
-  console.log(event.toJSON());
 });

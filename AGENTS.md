@@ -35,9 +35,9 @@ test/
 - Agregado `Event` é raiz que contém `EventSection` (sessions), que contém `EventSpot` (spots). `Event.publishAll()` propaga em cascata.
 - `Partner.initEvent(command)` cria um `Event` usando o próprio ID do partner — evita montagem externa do `partner_id`.
 
-## Erro de digitação conhecido
+## Convenção de nomes
 
-O arquivo `partnet.entity.ts` contém a classe `Partner`. `PartnerId` foi extraído para `partner-id.ts` para evitar dependência circular. Não renomeie `partnet.entity.ts` sem atualizar todos os imports.
+As entidades em `src/@core/events/domain/entities/` usam nomes em kebab-case simples, como `partner.ts`, `event.ts` e `customer.ts`. `PartnerId` permanece em `partner-id.ts` para evitar dependência circular.
 
 ## Comandos do desenvolvedor
 

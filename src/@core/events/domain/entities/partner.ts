@@ -1,6 +1,6 @@
 import { AggregateRoot } from '../../../common/domain/aggregate-root';
 import { PartnerId } from './partner-id';
-import { Event } from './event.entity';
+import { Event } from './event';
 
 export type InitEventCommand = {
   name: string;
@@ -41,7 +41,7 @@ export class Partner extends AggregateRoot {
 
   toJSON() {
     return {
-      id: this.id,
+      id: this.id.toString(),
       name: this.name,
     };
   }

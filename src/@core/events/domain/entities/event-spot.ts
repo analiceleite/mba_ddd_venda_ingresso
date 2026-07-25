@@ -55,7 +55,7 @@ export class EventSpot extends Entity {
     return {
       id: this.id.toString(),
       location: this.location,
-      reserved: this.is_reserved,
+      is_reserved: this.is_reserved,
       is_published: this.is_published,
     };
   }

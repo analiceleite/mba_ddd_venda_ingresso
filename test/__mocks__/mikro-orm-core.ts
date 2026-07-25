@@ -1,3 +1,19 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
+export class EntitySchema<T = any> {
+  private _options: Record<string, any>;
+
+  constructor(options: Record<string, any>) {
+    this._options = options;
+  }
+
+  get meta() {
+    return {
+      className: this._options.class?.name,
+      properties: { ...this._options.properties },
+    };
+  }
+}
+
 export class Collection<T extends object, O extends object = object> {
   private _items: T[] = [];
   private _initialized = false;

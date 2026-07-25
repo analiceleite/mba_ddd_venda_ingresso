@@ -35,9 +35,9 @@ export class Customer extends AggregateRoot {
 
   toJSON() {
     return {
-      id: this.id,
-      cpf: this.cpf,
-      name: this.name,
+      id: this.id.toString(),
+      cpf: this.cpf.toString(),
+      name: this.name.toString(),
     };
   }
 }

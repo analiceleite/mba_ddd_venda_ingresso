@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals';
 
 import { Cpf } from '../../../../common/domain/value-objects/cpf.vo';
 import { Name } from '../../../../common/domain/value-objects/name.vo';
-import { Customer, CustomerId } from '../customer.entity';
+import { Customer, CustomerId } from '../customer';
 
 test('deve criar um cliente', () => {
   const customer = Customer.create({ name: 'John Doe', cpf: '52998224725' });

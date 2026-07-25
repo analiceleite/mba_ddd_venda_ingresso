@@ -145,7 +145,7 @@ export class EventSection extends Entity {
 
   toJSON() {
     return {
-      id: this.id.value,
+      id: this.id.toString(),
       name: this.name,
       description: this.description,
       is_published: this.is_published,

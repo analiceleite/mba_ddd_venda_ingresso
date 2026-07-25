@@ -2,11 +2,20 @@ import { ValueObject } from './value-objects';
 
 export class Name extends ValueObject<string> {
   constructor(name: string) {
-    super(name);
-    this.isValid();
+    super(name.trim());
+    this.validate();
   }
 
-  isValid() {
-    return this.value.length > 0;
+  private validate() {
+    if (this.value.length === 0) {
+      throw new InvalidNameError('Name must not be empty');
+    }
+  }
+}
+
+export class InvalidNameError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'InvalidNameError';
   }
 }
