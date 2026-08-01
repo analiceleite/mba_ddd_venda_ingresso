@@ -12,7 +12,9 @@ export class MikroOrmPaymentRepository implements PaymentRepository {
       id: payment.id.toString(),
     });
 
-    this.entityManager.persist(PaymentMapper.toModel(payment, model ?? undefined));
+    this.entityManager.persist(
+      PaymentMapper.toModel(payment, model ?? undefined),
+    );
   }
 
   async findById(id: PaymentId): Promise<Payment | null> {

@@ -2,7 +2,7 @@ import { EntityManager } from '@mikro-orm/core';
 import { IUnitOfWork } from '../application/unit-of-work.interface';
 
 export class UnitOfWorkMikroOrm implements IUnitOfWork {
-  constructor(private em: EntityManager) { }
+  constructor(private em: EntityManager) {}
 
   async begin(): Promise<void> {
     await this.em.begin();
@@ -20,5 +20,4 @@ export class UnitOfWorkMikroOrm implements IUnitOfWork {
   async transactional<T>(work: () => Promise<T>): Promise<T> {
     return this.em.transactional(async () => work());
   }
-
 }

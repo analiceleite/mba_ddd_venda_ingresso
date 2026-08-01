@@ -9,18 +9,16 @@ import {
 export class FakePaymentGateway implements PaymentGateway {
   constructor(private readonly shouldFail = false) {}
 
-  async processPayment(
-    input: PaymentGatewayInput,
-  ): Promise<PaymentGatewayOutput> {
+  processPayment(input: PaymentGatewayInput): Promise<PaymentGatewayOutput> {
     void input;
 
     if (this.shouldFail) {
-      return { approved: false };
+      return Promise.resolve({ approved: false });
     }
 
-    return {
+    return Promise.resolve({
       approved: true,
       transaction_id: crypto.randomUUID(),
-    };
+    });
   }
 }

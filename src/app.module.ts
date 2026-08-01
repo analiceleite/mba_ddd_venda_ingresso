@@ -3,10 +3,10 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import mikroOrmConfig from './mikro-orm.config';
-import { OrdersModule } from './orders/orders.module';
+import { PresentationModule } from './presentation/presentation.module';
 
 @Module({
-  imports: [MikroOrmModule.forRoot(mikroOrmConfig), OrdersModule],
+  imports: [MikroOrmModule.forRoot(mikroOrmConfig), PresentationModule],
   controllers: [AppController],
   providers: [AppService],
 })

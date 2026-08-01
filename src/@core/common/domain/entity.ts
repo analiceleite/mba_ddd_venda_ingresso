@@ -1,7 +1,9 @@
-export abstract class Entity {
-  readonly id?: any;
+import { ValueObject } from './value-objects/value-objects';
 
-  abstract toJSON(): any;
+export abstract class Entity {
+  readonly id?: ValueObject<unknown>;
+
+  abstract toJSON(): unknown;
 
   equals(obj: this) {
     if (obj === null || obj === undefined) {

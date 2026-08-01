@@ -9,15 +9,20 @@ export class PartnerService {
     private uow: IUnitOfWork,
   ) {}
 
+  list() {
+    return this.partnerRepo.findAll();
+  }
+
   async create(input: { name: string }) {
     await this.uow.begin();
 
     try {
       const partner = Partner.create(input);
       await this.partnerRepo.save(partner);
-      this.uow.commit();
+      await this.uow.commit();
+      return partner;
     } catch (error) {
-      this.uow.rollback();
+      await this.uow.rollback();
       throw error;
     }
   }
