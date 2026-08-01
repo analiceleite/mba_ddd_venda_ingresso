@@ -2,11 +2,7 @@ import { EntityManager } from '@mikro-orm/core';
 
 import { Order, OrderId } from '../../../../domain/entities/order';
 import { OrderRepository } from '../../../../domain/repositories';
-import {
-  CustomerModel,
-  OrderMapper,
-  OrderModel,
-} from '../mappers';
+import { CustomerModel, OrderMapper, OrderModel } from '../mappers';
 
 export class MikroOrmOrderRepository implements OrderRepository {
   constructor(private readonly entityManager: EntityManager) {}

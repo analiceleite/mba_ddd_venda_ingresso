@@ -34,7 +34,7 @@ export class SpotReservationMapper {
     return new SpotReservation({
       id: model.id,
       spot_id: model.spot_id,
-      status: model.status as SpotReservationStatus,
+      status: model.status,
     });
   }
 

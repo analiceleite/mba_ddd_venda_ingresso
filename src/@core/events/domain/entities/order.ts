@@ -7,7 +7,7 @@ import {
 } from '../../../common/domain/value-objects/my-collection';
 import { CustomerId } from './customer';
 import { EventSpotId } from './event-spot';
-import { SpotReservation, SpotReservationId } from './spot-reservation';
+import { SpotReservation } from './spot-reservation';
 
 export class OrderId extends Uuid {}
 
@@ -76,9 +76,8 @@ export class Order extends AggregateRoot {
   }
 
   set reservations(reservations: AnyCollection<SpotReservation>) {
-    this._reservations = MyCollectionFactory.createFrom<SpotReservation>(
-      reservations,
-    );
+    this._reservations =
+      MyCollectionFactory.createFrom<SpotReservation>(reservations);
   }
 
   toJSON() {

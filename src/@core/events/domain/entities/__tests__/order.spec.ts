@@ -2,7 +2,7 @@ import { test, expect } from '@jest/globals';
 import { Customer } from '../customer';
 import { Event } from '../event';
 import { PartnerId } from '../partner-id';
-import { EventSpot, EventSpotId } from '../event-spot';
+import { EventSpot } from '../event-spot';
 import { Order, OrderStatus } from '../order';
 import { SpotReservation, SpotReservationStatus } from '../spot-reservation';
 
@@ -59,9 +59,7 @@ test('não deve confirmar um pedido já confirmado', () => {
   const order = Order.create({ customer_id: customer.id, amount: 100 });
   order.confirm();
 
-  expect(() => order.confirm()).toThrow(
-    'Only pending orders can be confirmed',
-  );
+  expect(() => order.confirm()).toThrow('Only pending orders can be confirmed');
 });
 
 test('deve reservar um spot disponível e liberá-lo ao cancelar', () => {

@@ -43,7 +43,7 @@ export class OrderMapper {
       id: model.id,
       customer_id: model.customer.id,
       amount: model.amount,
-      status: model.status as OrderStatus,
+      status: model.status,
     });
 
     for (const reservationModel of model.reservations.getItems()) {

@@ -6,13 +6,13 @@ export class EventService {
   constructor(
     private eventRepo: EventRepository,
     private uow: IUnitOfWork,
-  ) { }
+  ) {}
 
   async create(input: {
     name: string;
     description?: string | null;
     date: Date;
-    partner_id: string
+    partner_id: string;
   }) {
     await this.uow.begin();
     try {
