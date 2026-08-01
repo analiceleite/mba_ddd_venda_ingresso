@@ -4,17 +4,22 @@ import { EventId } from '../domain/entities/event';
 import { EventSectionId } from '../domain/entities/event-section';
 import { EventSpotId } from '../domain/entities/event-spot';
 import { Order, OrderId } from '../domain/entities/order';
+import { Payment, PaymentMethod } from '../domain/entities/payment';
 import {
   CustomerRepository,
   EventRepository,
   OrderRepository,
+  PaymentRepository,
 } from '../domain/repositories';
+import { PaymentGateway } from './payment.gateway';
 
 export class OrderService {
   constructor(
     private orderRepo: OrderRepository,
     private eventRepo: EventRepository,
     private customerRepo: CustomerRepository,
+    private paymentRepo: PaymentRepository,
+    private paymentGateway: PaymentGateway,
     private uow: IUnitOfWork,
   ) {}
 
@@ -23,16 +28,15 @@ export class OrderService {
     event_id: string;
     section_id: string;
     spot_id: string;
+    payment_method: PaymentMethod;
   }) {
-    await this.uow.begin();
-    try {
+    return this.uow.transactional(async () => {
       const event = await this.eventRepo.findById(new EventId(input.event_id));
       const customer = await this.customerRepo.findById(
         new CustomerId(input.customer_id),
       );
 
       if (!event || !customer) {
-        await this.uow.rollback();
         return null;
       }
 
@@ -41,12 +45,10 @@ export class OrderService {
       );
 
       if (!section) {
-        await this.uow.rollback();
         return null;
       }
 
       if (!section.allowReserveSpot(new EventSpotId(input.spot_id))) {
-        await this.uow.rollback();
         throw new Error('Spot not available for reservation');
       }
 
@@ -58,14 +60,29 @@ export class OrderService {
       });
       order.addReservation(new EventSpotId(input.spot_id));
 
+      const payment = Payment.create({
+        order_id: order.id,
+        amount: section.price,
+        method: input.payment_method,
+      });
+
+      const paymentResult = await this.paymentGateway.processPayment({
+        amount: section.price,
+        method: input.payment_method,
+      });
+
+      if (!paymentResult.approved) {
+        throw new Error('Payment rejected');
+      }
+
+      payment.markAsPaid();
+      order.confirm();
+
       await this.orderRepo.save(order);
+      await this.paymentRepo.save(payment);
       await this.eventRepo.save(event);
-      await this.uow.commit();
       return order;
-    } catch (error) {
-      await this.uow.rollback();
-      throw error;
-    }
+    });
   }
 
   async findById(id: string) {

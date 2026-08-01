@@ -6,6 +6,7 @@ import {
   EventSectionSchema,
   EventSpotSchema,
   OrderSchema,
+  PaymentSchema,
   PartnerSchema,
   SpotReservationSchema,
 } from './@core/common/infrastructure/database/schemas';
@@ -17,6 +18,7 @@ const mikroOrmConfig: Options = {
     EventSectionSchema,
     EventSpotSchema,
     OrderSchema,
+    PaymentSchema,
     PartnerSchema,
     SpotReservationSchema,
   ],
