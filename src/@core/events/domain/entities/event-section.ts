@@ -133,6 +133,19 @@ export class EventSection extends Entity {
       throw new Error('Spot already reserved');
     }
     spot.markAsReserved();
+    this.total_spots_reserved += 1;
+  }
+
+  unmarkSpotAsReserved(spot_id: EventSpotId) {
+    const spot = this.spots.find((spot) => spot.id.equals(spot_id));
+    if (!spot) {
+      throw new Error('Spot not found');
+    }
+    if (!spot.is_reserved) {
+      throw new Error('Spot is not reserved');
+    }
+    spot.unMarkAsReserved();
+    this.total_spots_reserved -= 1;
   }
 
   get spots(): ICollection<EventSpot> {
