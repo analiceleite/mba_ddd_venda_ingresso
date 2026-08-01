@@ -28,7 +28,10 @@ export class CustomerMapper {
     });
   }
 
-  static toModel(customer: Customer, model = new CustomerModel()): CustomerModel {
+  static toModel(
+    customer: Customer,
+    model = new CustomerModel(),
+  ): CustomerModel {
     model.id = customer.id.toString();
     model.cpf = customer.cpf.toString();
     model.name = customer.name.toString();

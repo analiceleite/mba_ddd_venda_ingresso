@@ -12,8 +12,9 @@ export class MikroOrmCustomerRepository implements CustomerRepository {
       id: customer.id.toString(),
     });
 
-    this.entityManager.persist(CustomerMapper.toModel(customer, model ?? undefined));
-    await this.entityManager.flush();
+    this.entityManager.persist(
+      CustomerMapper.toModel(customer, model ?? undefined),
+    );
   }
 
   async findById(id: CustomerId): Promise<Customer | null> {

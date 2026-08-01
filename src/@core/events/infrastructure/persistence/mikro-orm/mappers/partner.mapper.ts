@@ -1,7 +1,4 @@
-import {
-  Collection,
-  EntitySchema,
-} from '@mikro-orm/core';
+import { Collection, EntitySchema } from '@mikro-orm/core';
 
 import { Partner } from '../../../../domain/entities/partner';
 import { EventModel } from './event.mapper';

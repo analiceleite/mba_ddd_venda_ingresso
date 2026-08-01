@@ -21,7 +21,6 @@ export class MikroOrmEventRepository implements EventRepository {
     );
 
     this.entityManager.persist(target);
-    await this.entityManager.flush();
   }
 
   async findById(id: EventId): Promise<Event | null> {

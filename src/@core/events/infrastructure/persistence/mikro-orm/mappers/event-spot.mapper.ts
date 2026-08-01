@@ -38,7 +38,10 @@ export class EventSpotMapper {
     });
   }
 
-  static toModel(spot: EventSpot, model = new EventSpotModel()): EventSpotModel {
+  static toModel(
+    spot: EventSpot,
+    model = new EventSpotModel(),
+  ): EventSpotModel {
     model.id = spot.id.toString();
     model.location = spot.location;
     model.is_reserved = spot.is_reserved;

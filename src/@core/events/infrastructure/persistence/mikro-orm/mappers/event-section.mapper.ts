@@ -1,7 +1,4 @@
-import {
-  Collection,
-  EntitySchema,
-} from '@mikro-orm/core';
+import { Collection, EntitySchema } from '@mikro-orm/core';
 
 import { EventSection } from '../../../../domain/entities/event-section';
 import { EventSpotMapper, EventSpotModel } from './event-spot.mapper';

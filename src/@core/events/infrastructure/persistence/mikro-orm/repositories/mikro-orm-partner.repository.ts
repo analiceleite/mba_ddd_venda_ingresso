@@ -13,8 +13,9 @@ export class MikroOrmPartnerRepository implements PartnerRepository {
       id: partner.id.toString(),
     });
 
-    this.entityManager.persist(PartnerMapper.toModel(partner, model ?? undefined));
-    await this.entityManager.flush();
+    this.entityManager.persist(
+      PartnerMapper.toModel(partner, model ?? undefined),
+    );
   }
 
   async findById(id: PartnerId): Promise<Partner | null> {
