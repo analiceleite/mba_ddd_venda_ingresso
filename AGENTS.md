@@ -87,5 +87,5 @@ As entidades em `src/@core/events/domain/entities/` usam nomes em kebab-case sim
 ## Ambiente
 
 - `PORT` define a porta (padrão `3000`).
-- Conexão MySQL via env vars (padrões): `DB_HOST` (`localhost`), `DB_PORT` (`3306`), `DB_USER` (`root`), `DB_PASSWORD` (vazio), `DB_NAME` (`mba_ddd`).
+- Conexão MySQL via env vars (padrões): `DB_HOST` (`localhost`), `DB_PORT` (`3306`), `DB_USER` (`root`), `DB_PASSWORD` (`root`), `DB_NAME` (`mba_ddd`).
 - `.env` e arquivos `.env.*` locais estão no `.gitignore`.
