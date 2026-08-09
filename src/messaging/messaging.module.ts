@@ -18,7 +18,8 @@ import { QueueSetupService } from './queue-setup.service';
     {
       provide: MikroOrmOutboxRepository,
       inject: [EntityManager],
-      useFactory: (em: EntityManager) => new MikroOrmOutboxRepository(em.fork()),
+      useFactory: (em: EntityManager) =>
+        new MikroOrmOutboxRepository(em.fork()),
     },
     {
       provide: OutboxRelay,
@@ -31,4 +32,4 @@ import { QueueSetupService } from './queue-setup.service';
   ],
   exports: [MESSAGE_BROKER, MessageBrokerProvider],
 })
-export class MessagingModule { }
+export class MessagingModule {}
