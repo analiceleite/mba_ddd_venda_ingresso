@@ -1,6 +1,11 @@
 import { expect, test } from '@jest/globals';
 
 import { IUnitOfWork } from '../../../common/application/unit-of-work.interface';
+import {
+  OutboxMessage,
+  OutboxMessageStatus,
+} from '../../../common/outbox/outbox-message';
+import { OutboxRepository } from '../../../common/outbox/outbox-repository.interface';
 import { Customer, CustomerId } from '../../domain/entities/customer';
 import { Event, EventId } from '../../domain/entities/event';
 import { Order, OrderId, OrderStatus } from '../../domain/entities/order';
@@ -180,6 +185,33 @@ class InMemoryPaymentRepository implements PaymentRepository {
   }
 }
 
+class InMemoryOutboxRepository implements OutboxRepository {
+  public items: OutboxMessage[] = [];
+
+  saveMany(messages: OutboxMessage[]): Promise<void> {
+    this.items.push(...messages);
+    return Promise.resolve();
+  }
+
+  findPending(limit = 10): Promise<OutboxMessage[]> {
+    return Promise.resolve(
+      this.items
+        .filter((item) => item.status === OutboxMessageStatus.PENDING)
+        .slice(0, limit),
+    );
+  }
+
+  markAsPublished(messages: OutboxMessage[]): Promise<void> {
+    const ids = messages.map((message) => message.id.toString());
+    this.items.forEach((item) => {
+      if (ids.includes(item.id.toString())) {
+        item.markAsPublished();
+      }
+    });
+    return Promise.resolve();
+  }
+}
+
 class FakeTransactionalUnitOfWork implements IUnitOfWork {
   public began = false;
   public committed = false;
@@ -251,6 +283,7 @@ test('deve reservar e pagar o ingresso na mesma transação', async () => {
   const eventRepo = new InMemoryEventRepository([event]);
   const customerRepo = new InMemoryCustomerRepository([customer]);
   const paymentRepo = new InMemoryPaymentRepository();
+  const outboxRepo = new InMemoryOutboxRepository();
   const uow = new FakeTransactionalUnitOfWork();
   const service = new OrderService(
     orderRepo,
@@ -258,6 +291,7 @@ test('deve reservar e pagar o ingresso na mesma transação', async () => {
     customerRepo,
     paymentRepo,
     new ApprovePaymentGateway(),
+    outboxRepo,
     uow,
   );
 
@@ -276,6 +310,10 @@ test('deve reservar e pagar o ingresso na mesma transação', async () => {
   expect(eventRepo.items[0].total_spots_reserved).toBe(1);
   expect(uow.committed).toBe(true);
   expect(uow.rolledBack).toBe(false);
+  expect(outboxRepo.items.map((item) => item.event_name)).toEqual([
+    'order.confirmed',
+    'payment.paid',
+  ]);
 });
 
 test('deve fazer rollback quando o pagamento for rejeitado', async () => {
@@ -286,6 +324,7 @@ test('deve fazer rollback quando o pagamento for rejeitado', async () => {
   const eventRepo = new InMemoryEventRepository([event]);
   const customerRepo = new InMemoryCustomerRepository([customer]);
   const paymentRepo = new InMemoryPaymentRepository();
+  const outboxRepo = new InMemoryOutboxRepository();
   const uow = new FakeTransactionalUnitOfWork();
   const service = new OrderService(
     orderRepo,
@@ -293,6 +332,7 @@ test('deve fazer rollback quando o pagamento for rejeitado', async () => {
     customerRepo,
     paymentRepo,
     new RejectPaymentGateway(),
+    outboxRepo,
     uow,
   );
 
@@ -309,6 +349,7 @@ test('deve fazer rollback quando o pagamento for rejeitado', async () => {
   expect(orderRepo.items).toHaveLength(0);
   expect(paymentRepo.items).toHaveLength(0);
   expect(eventRepo.items[0].total_spots_reserved).toBe(0);
+  expect(outboxRepo.items).toHaveLength(0);
   expect(uow.committed).toBe(false);
   expect(uow.rolledBack).toBe(true);
 });

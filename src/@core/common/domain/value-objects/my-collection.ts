@@ -68,7 +68,10 @@ export class MyCollectionFactory {
           };
         }
 
-        const value: unknown = Reflect.get(target, prop, receiver);
+        const value: unknown = Reflect.get(target, prop, target);
+        if (typeof value === 'function') {
+          return value.bind(target);
+        }
         return value;
       },
     }) as unknown as ICollection<T>;

@@ -1,5 +1,4 @@
 import { EntityManager } from '@mikro-orm/core';
-import { InjectEntityManager } from '@mikro-orm/nestjs';
 import { Body, Controller, Get, Param, Post, Put, Scope } from '@nestjs/common';
 
 import { UnitOfWorkMikroOrm } from '../@core/common/infra/unit-of-work-mikro-orm';
@@ -11,7 +10,7 @@ import { MikroOrmCustomerRepository } from '../@core/events/infrastructure/persi
 export class CustomersController {
   private readonly customerService: CustomerService;
 
-  constructor(@InjectEntityManager() em: EntityManager) {
+  constructor(private readonly em: EntityManager) {
     this.customerService = new CustomerService(
       new MikroOrmCustomerRepository(em),
       new UnitOfWorkMikroOrm(em),

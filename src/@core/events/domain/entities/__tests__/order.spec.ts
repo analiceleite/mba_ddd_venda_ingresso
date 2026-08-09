@@ -5,6 +5,7 @@ import { PartnerId } from '../partner-id';
 import { EventSpot } from '../event-spot';
 import { Order, OrderStatus } from '../order';
 import { SpotReservation, SpotReservationStatus } from '../spot-reservation';
+import { OrderConfirmed } from '../../domain-events/order-confirmed.event';
 
 function buildPublishedEvent() {
   const event = Event.create({
@@ -52,6 +53,24 @@ test('deve confirmar um pedido pendente', () => {
   order.confirm();
 
   expect(order.status).toBe(OrderStatus.CONFIRMED);
+});
+
+test('deve registrar o evento OrderConfirmed ao confirmar', () => {
+  const customer = Customer.create({ name: 'John Doe', cpf: '52998224725' });
+  const order = Order.create({ customer_id: customer.id, amount: 100 });
+
+  order.confirm();
+
+  const events = order.pullDomainEvents();
+  expect(events).toHaveLength(1);
+  expect(events[0]).toBeInstanceOf(OrderConfirmed);
+  expect(events[0].event_name).toBe('order.confirmed');
+  expect(events[0].aggregate_id).toBe(order.id.toString());
+  expect(events[0].payload).toEqual({
+    order_id: order.id.toString(),
+    customer_id: customer.id.toString(),
+    amount: 100,
+  });
 });
 
 test('não deve confirmar um pedido já confirmado', () => {

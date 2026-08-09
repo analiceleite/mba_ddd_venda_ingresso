@@ -2,6 +2,7 @@ import { expect, test } from '@jest/globals';
 
 import { OrderId } from '../order';
 import { Payment, PaymentMethod, PaymentStatus } from '../payment';
+import { PaymentPaid } from '../../domain-events/payment-paid.event';
 
 test('deve criar um pagamento pendente', () => {
   const payment = Payment.create({
@@ -44,6 +45,29 @@ test('deve marcar um pagamento como pago', () => {
 
   expect(payment.status).toBe(PaymentStatus.PAID);
   expect(payment.paid_at).toBeInstanceOf(Date);
+});
+
+test('deve registrar o evento PaymentPaid ao marcar como pago', () => {
+  const orderId = new OrderId();
+  const payment = Payment.create({
+    order_id: orderId,
+    amount: 200,
+    method: PaymentMethod.PIX,
+  });
+
+  payment.markAsPaid();
+
+  const events = payment.pullDomainEvents();
+  expect(events).toHaveLength(1);
+  expect(events[0]).toBeInstanceOf(PaymentPaid);
+  expect(events[0].event_name).toBe('payment.paid');
+  expect(events[0].aggregate_id).toBe(payment.id.toString());
+  expect(events[0].payload).toEqual({
+    payment_id: payment.id.toString(),
+    order_id: orderId.toString(),
+    amount: 200,
+    method: PaymentMethod.PIX,
+  });
 });
 
 test('deve marcar um pagamento como falho', () => {

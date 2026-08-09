@@ -1,0 +1,112 @@
+@baseUrl = http://localhost:3000
+
+@customerId = 11111111-1111-1111-1111-111111111111
+@partnerId = f8d95eb9-78b0-4559-8fd6-a673cf19b7b3
+@eventId = 33333333-3333-3333-3333-333333333333
+@sectionId = 44444444-4444-4444-4444-444444444444
+@spotId = 55555555-5555-5555-5555-555555555555
+@orderId = 66666666-6666-6666-6666-666666666666
+
+### Customers
+POST {{baseUrl}}/customers
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "cpf": "52998224725"
+}
+
+###
+GET {{baseUrl}}/customers
+
+###
+PUT {{baseUrl}}/customers/{{customerId}}
+Content-Type: application/json
+
+{
+  "name": "John Updated"
+}
+
+### Partners
+POST {{baseUrl}}/partners
+Content-Type: application/json
+
+{
+  "name": "Partner A"
+}
+
+###
+GET {{baseUrl}}/partners
+
+###
+PUT {{baseUrl}}/partners/{{partnerId}}
+Content-Type: application/json
+
+{
+  "name": "Partner Updated"
+}
+
+### Events
+POST {{baseUrl}}/events
+Content-Type: application/json
+
+{
+  "name": "Show do Foo Fighters",
+  "description": "Show na cidade",
+  "date": "2026-12-10T20:00:00.000Z",
+  "partner_id": "{{partnerId}}"
+}
+
+###
+GET {{baseUrl}}/events
+
+###
+GET {{baseUrl}}/events/{{eventId}}
+
+###
+PUT {{baseUrl}}/events/{{eventId}}
+Content-Type: application/json
+
+{
+  "name": "Show do Foo Fighters 2026",
+  "description": "Descrição atualizada",
+  "date": "2026-12-11T20:00:00.000Z"
+}
+
+###
+POST {{baseUrl}}/events/{{eventId}}/publish
+
+###
+POST {{baseUrl}}/events/{{eventId}}/unpublish
+
+###
+POST {{baseUrl}}/events/{{eventId}}/publish-all
+
+###
+POST {{baseUrl}}/events/{{eventId}}/sections
+Content-Type: application/json
+
+{
+  "name": "Pista",
+  "description": "Setor principal",
+  "total_spots": 10,
+  "price": 150.0
+}
+
+### Orders / Reservation + Payment
+POST {{baseUrl}}/orders/reserve
+Content-Type: application/json
+
+{
+  "customer_id": "{{customerId}}",
+  "event_id": "{{eventId}}",
+  "section_id": "{{sectionId}}",
+  "spot_id": "{{spotId}}",
+  "payment_method": "pix"
+}
+
+###
+GET {{baseUrl}}/orders
+
+###
+GET {{baseUrl}}/orders/{{orderId}}

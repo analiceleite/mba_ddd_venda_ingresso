@@ -1,3 +1,4 @@
+import { config as dotenvConfig } from 'dotenv';
 import { defineConfig } from '@mikro-orm/mysql';
 
 import {
@@ -6,10 +7,13 @@ import {
   EventSectionSchema,
   EventSpotSchema,
   OrderSchema,
+  OutboxSchema,
   PaymentSchema,
   PartnerSchema,
   SpotReservationSchema,
 } from './@core/common/infrastructure/database/schemas';
+
+dotenvConfig({ override: true });
 
 const mikroOrmConfig = defineConfig({
   ensureDatabase: false,
@@ -19,6 +23,7 @@ const mikroOrmConfig = defineConfig({
     EventSectionSchema,
     EventSpotSchema,
     OrderSchema,
+    OutboxSchema,
     PaymentSchema,
     PartnerSchema,
     SpotReservationSchema,

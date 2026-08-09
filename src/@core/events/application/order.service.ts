@@ -1,4 +1,6 @@
 import { IUnitOfWork } from '../../common/application/unit-of-work.interface';
+import { OutboxMessage } from '../../common/outbox/outbox-message';
+import { OutboxRepository } from '../../common/outbox/outbox-repository.interface';
 import { CustomerId } from '../domain/entities/customer';
 import { EventId } from '../domain/entities/event';
 import { EventSectionId } from '../domain/entities/event-section';
@@ -20,6 +22,7 @@ export class OrderService {
     private customerRepo: CustomerRepository,
     private paymentRepo: PaymentRepository,
     private paymentGateway: PaymentGateway,
+    private outboxRepo: OutboxRepository,
     private uow: IUnitOfWork,
   ) {}
 
@@ -81,6 +84,15 @@ export class OrderService {
       await this.orderRepo.save(order);
       await this.paymentRepo.save(payment);
       await this.eventRepo.save(event);
+
+      const domainEvents = [
+        ...order.pullDomainEvents(),
+        ...payment.pullDomainEvents(),
+      ];
+      await this.outboxRepo.saveMany(
+        domainEvents.map((domainEvent) => OutboxMessage.create(domainEvent)),
+      );
+
       return order;
     });
   }

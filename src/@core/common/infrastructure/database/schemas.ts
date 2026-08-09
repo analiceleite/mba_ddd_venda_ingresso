@@ -8,3 +8,4 @@ export {
   PartnerSchema,
   SpotReservationSchema,
 } from '../../../events/infrastructure/persistence/mikro-orm/mappers';
+export { OutboxSchema } from '../../outbox/persistence/outbox.mapper';

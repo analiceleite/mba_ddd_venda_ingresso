@@ -1,5 +1,6 @@
 import { AggregateRoot } from '../../../common/domain/aggregate-root';
 import Uuid from '../../../common/domain/value-objects/uuid.vo';
+import { PaymentPaid } from '../domain-events/payment-paid.event';
 import { OrderId } from './order';
 
 export class PaymentId extends Uuid {}
@@ -66,6 +67,14 @@ export class Payment extends AggregateRoot {
 
     this.status = PaymentStatus.PAID;
     this.paid_at = new Date();
+    this.addDomainEvent(
+      new PaymentPaid(this.id.toString(), {
+        payment_id: this.id.toString(),
+        order_id: this.order_id.toString(),
+        amount: this.amount,
+        method: this.method,
+      }),
+    );
   }
 
   markAsFailed() {

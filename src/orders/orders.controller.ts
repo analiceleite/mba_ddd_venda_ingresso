@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/core';
-import { InjectEntityManager } from '@mikro-orm/nestjs';
 import { Body, Controller, Get, Param, Post, Scope } from '@nestjs/common';
 
+import { MikroOrmOutboxRepository } from '../@core/common/outbox/persistence/mikro-orm-outbox.repository';
 import { UnitOfWorkMikroOrm } from '../@core/common/infra/unit-of-work-mikro-orm';
 import { OrderService } from '../@core/events/application/order.service';
 import { PaymentMethod } from '../@core/events/domain/entities/payment';
@@ -15,13 +15,14 @@ import { FakePaymentGateway } from '../@core/events/infrastructure/gateways/fake
 export class OrdersController {
   private readonly orderService: OrderService;
 
-  constructor(@InjectEntityManager() em: EntityManager) {
+  constructor(private readonly em: EntityManager) {
     this.orderService = new OrderService(
       new MikroOrmOrderRepository(em),
       new MikroOrmEventRepository(em),
       new MikroOrmCustomerRepository(em),
       new MikroOrmPaymentRepository(em),
       new FakePaymentGateway(),
+      new MikroOrmOutboxRepository(em),
       new UnitOfWorkMikroOrm(em),
     );
   }

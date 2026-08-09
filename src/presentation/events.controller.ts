@@ -1,5 +1,4 @@
 import { EntityManager } from '@mikro-orm/core';
-import { InjectEntityManager } from '@mikro-orm/nestjs';
 import { Body, Controller, Get, Param, Post, Put, Scope } from '@nestjs/common';
 
 import { UnitOfWorkMikroOrm } from '../@core/common/infra/unit-of-work-mikro-orm';
@@ -10,7 +9,7 @@ import { MikroOrmEventRepository } from '../@core/events/infrastructure/persiste
 export class EventsController {
   private readonly eventService: EventService;
 
-  constructor(@InjectEntityManager() em: EntityManager) {
+  constructor(private readonly em: EntityManager) {
     this.eventService = new EventService(
       new MikroOrmEventRepository(em),
       new UnitOfWorkMikroOrm(em),

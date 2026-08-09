@@ -5,6 +5,7 @@ import {
   ICollection,
   MyCollectionFactory,
 } from '../../../common/domain/value-objects/my-collection';
+import { OrderConfirmed } from '../domain-events/order-confirmed.event';
 import { CustomerId } from './customer';
 import { EventSpotId } from './event-spot';
 import { SpotReservation } from './spot-reservation';
@@ -65,6 +66,13 @@ export class Order extends AggregateRoot {
       throw new Error('Only pending orders can be confirmed');
     }
     this.status = OrderStatus.CONFIRMED;
+    this.addDomainEvent(
+      new OrderConfirmed(this.id.toString(), {
+        order_id: this.id.toString(),
+        customer_id: this.customer_id.toString(),
+        amount: this.amount,
+      }),
+    );
   }
 
   cancel() {
