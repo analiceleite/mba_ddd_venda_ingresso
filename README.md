@@ -1,98 +1,407 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# MBA DDD Venda de Ingresso
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API backend para reserva e venda de ingressos, construída como estudo prático de **Domain-Driven Design**, **Clean Architecture**, persistência com **MikroORM/MySQL** e publicação assíncrona de eventos com **Outbox Pattern + RabbitMQ**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+O objetivo do projeto é demonstrar uma aplicação NestJS onde o framework fica na borda e o domínio permanece isolado, testável e independente de infraestrutura.
 
-## Description
+## O Que Este Projeto Demonstra
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Modelagem de domínio rico com agregados, entidades e value objects.
+- Separação entre domínio, aplicação, infraestrutura e apresentação.
+- Regras de negócio dentro do domínio, não em controllers.
+- Use cases transacionais com Unit of Work.
+- Repositórios por contrato, com implementação MikroORM.
+- Persistência de agregados com mappers entre modelo de banco e domínio.
+- Eventos de domínio (`OrderConfirmed`, `PaymentPaid`).
+- Outbox Pattern para publicação confiável de eventos.
+- Integração com RabbitMQ via exchange `domain_events`.
+- Testes unitários para entidades, value objects, services e outbox.
 
-## Project setup
+## Domínio
 
-```bash
-$ npm install
+O sistema representa um fluxo simplificado de venda de ingressos:
+
+1. Um **partner** cria eventos.
+2. Um **event** possui setores/sections.
+3. Cada section gera seus próprios spots/assentos.
+4. Um **customer** pode reservar um spot publicado e disponível.
+5. A reserva cria um **order** pendente.
+6. Um pagamento é processado.
+7. Se aprovado, o pagamento é marcado como pago e o pedido é confirmado.
+8. Eventos de domínio são gravados no outbox e publicados no RabbitMQ.
+
+## Agregados e Entidades
+
+- **Partner**: organizador responsável por iniciar eventos.
+- **Event**: agregado raiz de evento, com sections e spots.
+- **EventSection**: setor/lote com preço, quantidade de spots e regras de reserva.
+- **EventSpot**: unidade reservável dentro de uma section.
+- **Customer**: comprador identificado por nome e CPF.
+- **Order**: agregado de pedido, com status `pending`, `confirmed` ou `cancelled`.
+- **SpotReservation**: reserva de um spot dentro do pedido.
+- **Payment**: pagamento do pedido, com método `pix` ou `card` e status `pending`, `paid` ou `failed`.
+- **OutboxMessage**: mensagem persistida para publicação assíncrona de eventos.
+
+## Stack
+
+- **Node.js + TypeScript**
+- **NestJS 11** como camada de apresentação/bootstrap
+- **MikroORM 7** com MySQL
+- **MySQL 8** via Docker Compose
+- **RabbitMQ** com Management UI
+- **Jest + ts-jest** para testes
+- **SWC** no build NestJS
+- **ESLint + Prettier**
+
+## Arquitetura
+
+```text
+src/
+  main.ts
+  app.module.ts
+  mikro-orm.config.ts
+
+  presentation/
+    customers.controller.ts
+    events.controller.ts
+    partners.controller.ts
+
+  orders/
+    orders.controller.ts
+    orders.module.ts
+
+  messaging/
+    messaging.module.ts
+    outbox-poller.service.ts
+    message-broker.provider.ts
+    queue-setup.service.ts
+
+  @core/
+    common/
+      domain/
+        entity.ts
+        aggregate-root.ts
+        value-objects/
+      application/
+        unit-of-work.interface.ts
+        message-broker.interface.ts
+      infra/
+        unit-of-work-mikro-orm.ts
+      infrastructure/database/
+        schemas.ts
+      outbox/
+        outbox-message.ts
+        outbox-relay.ts
+        outbox-repository.interface.ts
+
+    events/
+      domain/
+        entities/
+        repositories/
+        domain-events/
+      application/
+        customer.service.ts
+        event.service.ts
+        order.service.ts
+        partner.service.ts
+        payment.gateway.ts
+      infrastructure/
+        gateways/
+        message-broker/
+        persistence/mikro-orm/
+          mappers/
+          repositories/
 ```
 
-## Compile and run the project
+## Camadas
 
-```bash
-# development
-$ npm run start
+### Domain
 
-# watch mode
-$ npm run start:dev
+Contém regras e invariantes de negócio. Não depende de NestJS, MikroORM, RabbitMQ ou banco.
 
-# production mode
-$ npm run start:prod
+Exemplos:
+
+- `EventSection.allowReserveSpot()` valida se o setor e o spot estão publicados e disponíveis.
+- `EventSection.markSpotAsReserved()` altera o estado do spot e incrementa o total reservado.
+- `Order.confirm()` só permite confirmar pedidos pendentes e dispara `OrderConfirmed`.
+- `Payment.markAsPaid()` só liquida pagamentos pendentes e dispara `PaymentPaid`.
+- `Cpf`, `Name` e `Uuid` validam dados na construção.
+
+### Application
+
+Orquestra casos de uso usando contratos de repositório, gateway de pagamento e Unit of Work.
+
+O principal fluxo está em `OrderService.reserve()`:
+
+1. Carrega evento e customer.
+2. Localiza section e spot.
+3. Valida disponibilidade.
+4. Marca spot como reservado.
+5. Cria order e payment.
+6. Processa pagamento.
+7. Confirma order e payment.
+8. Persiste order, payment e event na mesma transação.
+9. Converte eventos de domínio em mensagens de outbox.
+
+### Infrastructure
+
+Implementa persistência, mappers, gateway fake de pagamento, Unit of Work MikroORM e broker RabbitMQ.
+
+Cada entidade persistida tem:
+
+- `XxxModel`
+- `XxxSchema`
+- `XxxMapper`
+- `MikroOrmXxxRepository`
+
+### Presentation
+
+Controllers NestJS expõem HTTP e montam os use cases com implementações concretas.
+
+O `@core` não conhece controllers, decorators ou dependency injection do NestJS.
+
+## Outbox Pattern
+
+Quando uma reserva é confirmada, os eventos de domínio são armazenados como `OutboxMessage` na mesma transação da alteração de estado.
+
+O `OutboxPollerService` roda periodicamente e chama `OutboxRelay.dispatchPending()`, que:
+
+1. Busca mensagens pendentes.
+2. Publica no RabbitMQ usando a exchange `domain_events`.
+3. Marca as mensagens como publicadas.
+
+Configurações:
+
+```env
+RABBITMQ_URL=amqp://localhost:5672
+OUTBOX_POLL_INTERVAL_MS=5000
+OUTBOX_BATCH_SIZE=10
 ```
 
-## Run tests
+## Endpoints
 
-```bash
-# unit tests
-$ npm run test
+Base URL local: `http://localhost:3000`
 
-# e2e tests
-$ npm run test:e2e
+### Customers
 
-# test coverage
-$ npm run test:cov
+```http
+POST /customers
+GET /customers
+PUT /customers/:id
 ```
 
-## Deployment
+Payload de criação:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+```json
+{
+  "name": "John Doe",
+  "cpf": "52998224725"
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Partners
 
-## Resources
+```http
+POST /partners
+GET /partners
+PUT /partners/:id
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+Payload de criação:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```json
+{
+  "name": "Partner A"
+}
+```
 
-## Support
+### Events
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```http
+POST /events
+GET /events
+GET /events/:id
+PUT /events/:id
+POST /events/:id/publish
+POST /events/:id/unpublish
+POST /events/:id/publish-all
+POST /events/:id/sections
+```
 
-## Stay in touch
+Payload de criação de evento:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```json
+{
+  "name": "Show do Foo Fighters",
+  "description": "Show na cidade",
+  "date": "2026-12-10T20:00:00.000Z",
+  "partner_id": "partner-uuid"
+}
+```
 
-## License
+Payload de criação de section:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```json
+{
+  "name": "Pista",
+  "description": "Setor principal",
+  "total_spots": 10,
+  "price": 150
+}
+```
+
+### Orders
+
+```http
+POST /orders/reserve
+GET /orders
+GET /orders/:id
+```
+
+Payload de reserva:
+
+```json
+{
+  "customer_id": "customer-uuid",
+  "event_id": "event-uuid",
+  "section_id": "section-uuid",
+  "spot_id": "spot-uuid",
+  "payment_method": "pix"
+}
+```
+
+Também existe o arquivo `api.http` com exemplos prontos para clientes REST compatíveis.
+
+## Como Rodar Localmente
+
+### Pré-requisitos
+
+- Node.js 20+
+- Docker e Docker Compose
+- npm
+
+### Instalação
+
+```bash
+npm install
+```
+
+### Ambiente
+
+Copie o arquivo de exemplo:
+
+```bash
+cp .env.example .env
+```
+
+Variáveis disponíveis:
+
+```env
+PORT=3000
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=root
+DB_NAME=mba_ddd
+
+RABBITMQ_URL=amqp://localhost:5672
+OUTBOX_POLL_INTERVAL_MS=5000
+OUTBOX_BATCH_SIZE=10
+```
+
+### Subir Infraestrutura
+
+```bash
+npm run db:up
+```
+
+Isso inicia:
+
+- MySQL em `localhost:3306`
+- RabbitMQ em `localhost:5672`
+- RabbitMQ Management UI em `http://localhost:15672` (`guest` / `guest`)
+
+### Criar/Atualizar Schema
+
+```bash
+npm run db:schema:update
+```
+
+Ou usando migrações:
+
+```bash
+npm run db:migration:create
+npm run db:migration:up
+```
+
+### Executar API
+
+```bash
+npm run start:dev
+```
+
+## Scripts
+
+| Comando | Descrição |
+|---|---|
+| `npm run start` | Inicia a aplicação NestJS |
+| `npm run start:dev` | Inicia em modo watch |
+| `npm run build` | Build com Nest/SWC |
+| `npm run start:prod` | Executa `dist/main` |
+| `npm run db:up` | Sobe MySQL e RabbitMQ |
+| `npm run db:down` | Remove containers |
+| `npm run db:schema:update` | Sincroniza schema via MikroORM |
+| `npm run db:migration:create` | Cria migration MikroORM |
+| `npm run db:migration:up` | Executa migrations MikroORM |
+| `npm test` | Roda testes unitários |
+| `npm run test:cov` | Roda testes com cobertura |
+| `npm run test:e2e` | Roda testes e2e |
+| `npm run lint` | ESLint com autofix |
+| `npm run format` | Prettier |
+
+## Testes
+
+Os testes cobrem regras de domínio e serviços de aplicação, incluindo:
+
+- Value Objects (`Cpf`, `Name`, `Uuid`).
+- Agregados (`Event`, `Order`, `Payment`, `Customer`).
+- Fluxo de reserva em `OrderService`.
+- Eventos de domínio em `AggregateRoot`.
+- Outbox messages e relay.
+- Schemas/mappers de persistência.
+
+Rodar todos os testes:
+
+```bash
+npm test
+```
+
+Rodar com cobertura:
+
+```bash
+npm run test:cov
+```
+
+## Decisões de Design
+
+- **Domínio isolado**: `src/@core` não depende de NestJS.
+- **Controllers finos**: HTTP apenas traduz entrada e chama services.
+- **UoW explícito**: casos de uso transacionais recebem `IUnitOfWork`.
+- **Mappers dedicados**: domínio não é contaminado por modelos ORM.
+- **Outbox**: eventos são publicados fora da transação principal, mas gravados junto da mudança de estado.
+- **Gateway fake de pagamento**: permite testar o fluxo sem provedor externo.
+- **Request scope nos controllers**: cada request recebe seu `EntityManager` e repositórios concretos.
+
+## Próximas Melhorias Possíveis
+
+- DTOs com validação usando `class-validator` ou Zod.
+- Autenticação/autorização para endpoints administrativos.
+- Tratamento padronizado de erros de domínio.
+- Migrations versionadas no repositório.
+- Testes e2e cobrindo fluxo completo HTTP.
+- Substituir `FakePaymentGateway` por integração real.
+- Consumidores reais para os eventos publicados no RabbitMQ.
+
+## Licença
+
+Projeto privado/educacional, sem licença pública definida.
